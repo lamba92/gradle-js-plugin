@@ -1,0 +1,6 @@
+.idea/
+.gradle/
+*.iml
+npm-cache/
+npm-object-cache/
+build/

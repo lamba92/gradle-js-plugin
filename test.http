@@ -1,0 +1,13 @@
+GET http://0.0.0.0:8080/karma/6.3.9/derp.pom
+
+###
+
+GET http://0.0.0.0:8080/karma/6.3.9/derp.module
+
+###
+// @no-redirect
+GET http://0.0.0.0:8080/karma/6.3.9/derp.tgz
+
+###
+
+GET https://registry.npmjs.org/dash/
