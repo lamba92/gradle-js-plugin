@@ -20,6 +20,9 @@ interface ObjectCache {
     suspend fun <T : Any> saveObject(`object`: T, key: String)
 }
 
+suspend inline fun <reified T : Any> ObjectCache.getOrPutObject(key: String, crossinline action: suspend () -> T): T =
+    getObject(key) ?: action().also { saveObject(it, key) }
+
 suspend inline fun <reified T : Any> ObjectCache.getObject(key: String) =
     getObject(key, T::class)
 
@@ -65,10 +68,6 @@ class FileBasedObjectCache(
     val json: Json
 ) : NormalizedObjectCache() {
 
-    init {
-        path.createDirectories()
-    }
-
     private val syncMutex = Mutex()
     private val mutexMap = mutableMapOf<String, Mutex>()
 
@@ -76,6 +75,7 @@ class FileBasedObjectCache(
         val mutex = syncMutex.withLock { mutexMap.getOrPut(normalizedKey) { Mutex() }.also { it.lock() } }
         @Suppress("BlockingMethodInNonBlockingContext")
         return withContext(Dispatchers.IO) {
+            path.createDirectories()
             val file = path.resolve(normalizedKey).takeIf { it.exists() }
             mutex.unlock()
             file?.readText()
@@ -89,6 +89,7 @@ class FileBasedObjectCache(
         val mutex = syncMutex.withLock { mutexMap.getOrPut(normalizedKey) { Mutex() }.also { it.lock() } }
         @Suppress("BlockingMethodInNonBlockingContext")
         withContext(Dispatchers.IO) {
+            path.createDirectories()
             path.resolve(normalizedKey)
                 .writeText(json.encodeToString(serializer(`object`::class.createType()), `object`))
         }

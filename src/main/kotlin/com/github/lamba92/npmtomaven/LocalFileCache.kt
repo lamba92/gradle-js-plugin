@@ -33,15 +33,20 @@ class LocalFileCache(
     override suspend fun saveFileUsingNormalizedKey(file: File, normalizedKey: String) {
         val mutex = syncMutex.withLock { mutexMap.getOrPut(normalizedKey) { Mutex() }.also { it.lock() } }
         withContext(Dispatchers.IO) {
+            path.createDirectories()
             file.toPath().copyTo(path.resolve(normalizedKey), true)
         }
         mutex.unlock()
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun saveFileUsingNormalizedKey(bytes: ByteArray, normalizedKey: String) {
+    override suspend fun saveFileUsingNormalizedKey(bytes: ByteArray, normalizedKey: String): File {
         val mutex = syncMutex.withLock { mutexMap.getOrPut(normalizedKey) { Mutex() }.also { it.lock() } }
-        withContext(Dispatchers.IO) { path.resolve(normalizedKey).writeBytes(bytes) }
+        withContext(Dispatchers.IO) {
+            path.createDirectories()
+            path.resolve(normalizedKey).writeBytes(bytes)
+        }
         mutex.unlock()
+        return path.resolve(normalizedKey).toFile()
     }
 }

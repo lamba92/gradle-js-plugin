@@ -15,6 +15,8 @@ kotlin {
         sourceSets {
             all {
                 languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                languageSettings.optIn("kotlin.time.ExperimentalTime")
+                languageSettings.optIn("kotlin.ExperimentalStdlibApi")
             }
         }
     }
@@ -50,7 +52,7 @@ dependencies {
 
     implementation("io.github.pdvrieze.xmlutil:serialization:0.84.0-RC1")
     implementation("ch.qos.logback:logback-classic:1.2.7")
-    implementation("net.swiftzer.semver:semver:1.1.2")
+    implementation("com.github.yuchi:npm-semver:1.0.0")
     implementation("commons-codec:commons-codec:1.15")
 
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")

@@ -14,11 +14,11 @@ data class NpmMetadata(
 
     @Serializable
     data class Distribution(
-        val integrity: String,
-        val shasum: String,
+        val integrity: String? = null,
+        val shasum: String? = null,
         val tarball: String,
-        val fileCount: Long,
-        val unpackedSize: Long,
+        val fileCount: Long? = null,
+        val unpackedSize: Long? = null,
         @SerialName("npm-signature") val npmSignature: String? = null
     )
 }

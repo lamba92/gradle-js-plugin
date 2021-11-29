@@ -20,20 +20,20 @@ data class Author(
 
 @Serializable
 data class Bugs(
-    val url: String
+    val url: String? = null
 )
 
 typealias Maintainer = Author
 
 @Serializable
 data class Repository(
-    val type: String,
-    val url: String
+    val type: String? = null,
+    val url: String? = null
 )
 
 @Serializable
 data class Dist(
-    val shasum: String,
-    val tarball: String
+    val shasum: String? = null,
+    val tarball: String? = null
 )
 

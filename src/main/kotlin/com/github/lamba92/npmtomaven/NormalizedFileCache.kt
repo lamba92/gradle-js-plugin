@@ -8,7 +8,7 @@ abstract class NormalizedFileCache : FileCache {
 
     protected abstract suspend fun saveFileUsingNormalizedKey(file: File, normalizedKey: String)
 
-    protected abstract suspend fun saveFileUsingNormalizedKey(bytes: ByteArray, normalizedKey: String)
+    protected abstract suspend fun saveFileUsingNormalizedKey(bytes: ByteArray, normalizedKey: String): File
 
     private fun normalizeKey(key: String) =
         key.map { if (it.isDigit() || it.isLetter() || it == '.') it else '_' }.joinToString("")

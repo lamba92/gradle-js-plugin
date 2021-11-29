@@ -5,19 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NpmPackageInfo(
-    @SerialName("_id") val id: String,
-    @SerialName("_rev") val rev: String,
-    val bugs: Bugs? = null,
-    val description: String,
-    @SerialName("dist-tags") val distTags: Map<String, String> = emptyMap(),
-    val homepage: String? = null,
-    val license: String,
-    val maintainers: List<Maintainer> = emptyList(),
-    val name: String,
-    val readme: String,
-    val readmeFilename: String,
-    val repository: Repository? = null,
-    val time: Map<String, String> = emptyMap(),
     val versions: Map<String, Version> = emptyMap()
 )
 
@@ -30,7 +17,7 @@ data class Version(
     @SerialName("_npmVersion") val npmVersion: String? = null,
     val lib: String? = null,
     val main: String? = null,
-    val name: String,
+    val name: String? = null,
     val url: String? = null,
-    val version: String
+    val version: String? = null
 )
