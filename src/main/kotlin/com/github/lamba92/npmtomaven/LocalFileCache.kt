@@ -36,7 +36,10 @@ class LocalFileCache(
             path.createDirectories()
             file.toPath().copyTo(path.resolve(normalizedKey), true)
         }
-        mutex.unlock()
+        syncMutex.withLock {
+            mutex.unlock()
+            mutexMap.remove(normalizedKey)
+        }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")

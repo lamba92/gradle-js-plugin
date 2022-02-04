@@ -25,7 +25,7 @@ fun MavenPom(
 )
 
 @Serializable
-@SerialName("project")
+@XmlSerialName("project", "http://maven.apache.org/POM/4.0.0", "")
 data class MavenPom(
     @XmlElement(true) val modelVersion: String = "4.0.0",
     @XmlElement(true) val groupId: String,
@@ -33,17 +33,11 @@ data class MavenPom(
     @XmlElement(true) val version: String,
     @XmlElement(true) val packaging: String,
     @XmlElement(true) val developers: Developers = Developers(),
-    @XmlElement(true) val dependencies: Dependencies = Dependencies()
+    @XmlElement(true) val dependencies: Dependencies = Dependencies(),
+    @XmlElement(false) @XmlSerialName("schemaLocation", "http://www.w3.org/2001/XMLSchema-instance", "xsi")
+    val xsiSchemaLocation: String = "http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
 ) {
 
-    @Suppress("unused")
-    @XmlElement(false)
-    val xmlns: String = "http://maven.apache.org/POM/4.0.0"
-
-    @Suppress("unused")
-    @XmlElement(false)
-    @XmlSerialName("schemaLocation", "http://www.w3.org/2001/XMLSchema-instance", "xsi")
-    val xsiSchemaLocation: String = "http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
 
     @Serializable
     @SerialName("developers")

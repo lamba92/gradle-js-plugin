@@ -1,12 +1,12 @@
 package com.github.lamba92.npmtomaven
 
-import com.github.lamba92.npmtomaven.models.NpmMetadata
+import com.github.lamba92.npmtomaven.models.NpmVersionedPackageMetadata
 import com.github.yuchi.semver.Version
 import io.ktor.application.*
 import io.ktor.client.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
-import kotlinx.coroutines.Deferred
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import nl.adaptivity.xmlutil.serialization.XML
 import org.slf4j.Logger
@@ -20,31 +20,33 @@ suspend fun PipelineContext<Any, ApplicationCall>.respondGradleMetadataSha1(
     packageName: String,
     packageVersion: Version,
     tarballKey: String,
-    tarballFile: Deferred<File>,
+    tarballFile: suspend () -> File,
     client: HttpClient,
-    npmMetadata: NpmMetadata,
-    tarballSha512: Deferred<String>,
-    tarballSha256: Deferred<String>,
-    tarballSha1: Deferred<String>,
-    tarballMd5: Deferred<String>
+    npmMetadata: NpmVersionedPackageMetadata,
+    publicationDate: Instant,
+    tarballSha512: suspend () -> String,
+    tarballSha256: suspend () -> String,
+    tarballSha1: suspend () -> String,
+    tarballMd5: suspend () -> String
 ) {
     call.respondText {
         objectCache.getOrPutObject("$key.module.sha1") {
             security.sha1.digestAsHex(
                 getOrCacheModule(
-                    objectCache,
-                    key,
-                    json,
-                    packageName,
-                    packageVersion,
-                    tarballKey,
-                    tarballFile,
-                    client,
-                    npmMetadata,
-                    tarballSha512,
-                    tarballSha256,
-                    tarballSha1,
-                    tarballMd5
+                    objectCache = objectCache,
+                    key = key,
+                    json = json,
+                    packageName = packageName,
+                    packageVersion = packageVersion,
+                    tarballKey = tarballKey,
+                    tarballFile = tarballFile,
+                    client = client,
+                    npmMetadata = npmMetadata,
+                    publicationDate = publicationDate,
+                    tarballSha512 = tarballSha512,
+                    tarballSha256 = tarballSha256,
+                    tarballSha1 = tarballSha1,
+                    tarballMd5 = tarballMd5,
                 )
             )
         }
@@ -58,22 +60,22 @@ suspend fun ApplicationCall.respondPomSha1(
     xml: XML,
     packageName: String,
     packageVersion: Version,
-    npmMetadata: NpmMetadata,
-    generateGradleMetadata: Boolean,
+    npmMetadata: NpmVersionedPackageMetadata,
+    publicationDate: Instant,
     client: HttpClient
 ) = respondText {
     objectCache.getOrPutObject("$key.pom.sha1") {
         security.sha1.digestAsHex(
             getOrCachePom(
-                objectCache,
-                key,
-                xml,
-                packageName,
-                packageVersion,
-                npmMetadata,
-                generateGradleMetadata,
-                client,
-                application.log
+                objectCache = objectCache,
+                key = key,
+                xml = xml,
+                packageName = packageName,
+                packageVersion = packageVersion,
+                npmVersionedPackageMetadata = npmMetadata,
+                publicationDate = publicationDate,
+                client = client,
+                logger = application.log
             )
         )
     }
@@ -86,13 +88,14 @@ suspend fun getOrCacheModule(
     packageName: String,
     packageVersion: Version,
     tarballKey: String,
-    tarballFile: Deferred<File>,
+    tarballFile: suspend () -> File,
     client: HttpClient,
-    npmMetadata: NpmMetadata,
-    tarballSha512: Deferred<String>,
-    tarballSha256: Deferred<String>,
-    tarballSha1: Deferred<String>,
-    tarballMd5: Deferred<String>
+    npmMetadata: NpmVersionedPackageMetadata,
+    publicationDate: Instant,
+    tarballSha512: suspend () -> String,
+    tarballSha256: suspend () -> String,
+    tarballSha1: suspend () -> String,
+    tarballMd5: suspend () -> String
 ) = objectCache.getOrPutObject("$key.module") {
     generateGradleMetadata(
         json = json,
@@ -103,6 +106,7 @@ suspend fun getOrCacheModule(
         client = client,
         objectCache = objectCache,
         npmMetadata = npmMetadata,
+        publicationDate = publicationDate,
         sha512 = tarballSha512,
         sha256 = tarballSha256,
         sha1 = tarballSha1,
@@ -116,8 +120,8 @@ suspend fun getOrCachePom(
     xml: XML,
     packageName: String,
     packageVersion: Version,
-    npmMetadata: NpmMetadata,
-    generateGradleMetadata: Boolean,
+    npmVersionedPackageMetadata: NpmVersionedPackageMetadata,
+    publicationDate: Instant,
     client: HttpClient,
     logger: Logger
 ) = objectCache.getOrPutObject("$key.pom") {
@@ -125,8 +129,8 @@ suspend fun getOrCachePom(
         xml = xml,
         packageName = packageName,
         packageVersion = packageVersion.toString(),
-        npmMetadata = npmMetadata,
-        addMetadataAnnotation = generateGradleMetadata,
+        npmVersionedPackageMetadata = npmVersionedPackageMetadata,
+        publicationDate = publicationDate,
         client = client,
         logger = logger
     )

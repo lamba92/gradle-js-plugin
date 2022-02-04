@@ -1,15 +1,18 @@
-GET http://0.0.0.0:8080/@spatial/turf /1.0.5/lol.module
+GET http://0.0.0.0:8080/@spatial/turf /1.0.5/lol.pom
 
 ###
 
-GET http://0.0.0.0:8080/npm/iconv-lite/0.4.24
+GET https://registry.npmjs.org/@spatial/turf
+###
+
+GET http://0.0.0.0:8080/npm/iconv-lite/0.4.24/lol.module
 
 ###
 // @no-redirect
-GET  https://registry.npmjs.org/iconv-lite/0.4.24
+GET  https://registry.npmjs.org/lodash
 
 ###
 
-GET https://registry.npmjs.org/2pl-party/0.0.1
+GET https://registry.npmjs.org/lodash
 
 

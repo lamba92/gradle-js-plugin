@@ -1,11 +1,13 @@
 package com.github.lamba92.npmtomaven.models
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NpmPackageInfo(
-    val versions: Map<String, Version> = emptyMap()
+data class NpmPackageMetadata(
+    val versions: Map<String, Version> = emptyMap(),
+    val time: Map<String, Instant> = emptyMap()
 )
 
 @Serializable
