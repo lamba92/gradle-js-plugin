@@ -77,4 +77,10 @@ tasks {
         dependsOn(createProductionJsBundle)
         script.set(outputProductionBundle)
     }
+
+    register<NodeTask>("runMain") {
+        dependsOn(compileProductionExecutableKotlinJs)
+        environment.put("NODE_PATH", kotlinNpmInstall.nodeModulesDir.absolutePath)
+        script.set(outputProductionBundle)
+    }
 }

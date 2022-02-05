@@ -3,7 +3,7 @@ import org.jetbrains.gradle.respond
 import kotlin.js.Json
 
 suspend fun main() {
-    println(ApiGatewayEvent("npm/@spatial/turf/1.0.5/lol.tgz.md5").respond().toString())
+    println(ApiGatewayEvent("npm/@spatial/turf/1.0.5/lol.tgz").respond().toString())
 }
 
 fun ApiGatewayEvent(
