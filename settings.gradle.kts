@@ -7,6 +7,7 @@ pluginManagement {
         kotlin("js") version kotlinVersion
         kotlin("multiplatform") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
+        id("com.github.node-gradle.node") version "3.1.1"
     }
 }
 

@@ -5,9 +5,6 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.gradle.data.*
@@ -18,22 +15,32 @@ class NpmArtifactManager(
     private val client: HttpClient,
     private val security: Security,
 ) {
-    data class Result(val hashes: NpmArtifactHashes, val pom: String, val module: String)
 
-    @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-    @OptIn(DelicateCoroutinesApi::class)
-    suspend fun resultFor(coordinates: NpmArtifactCoordinates): Result {
-        val cacheHashes = caches.getArtifactDataFor(coordinates)
-        if (cacheHashes != null) return cacheHashes
+    suspend fun getPom(coordinates: NpmArtifactCoordinates) =
+        caches.getPom(coordinates) ?: resultFor(coordinates)
+            .also { caches.saveArtifactData(it) }
+            .pom
+
+    suspend fun getGradleMetadata(coordinates: NpmArtifactCoordinates) =
+        caches.getGradleMetadata(coordinates) ?: resultFor(coordinates)
+            .also { caches.saveArtifactData(it) }
+            .module
+
+    suspend fun getHashes(coordinates: NpmArtifactCoordinates) =
+        caches.getHashes(coordinates) ?: resultFor(coordinates)
+            .also { caches.saveArtifactData(it) }
+            .hashes
+
+    private suspend fun resultFor(coordinates: NpmArtifactCoordinates): NpmArtifactResult {
 
         val coordinatesMetadata: NpmVersionedPackageMetadata =
-            retry { client.get("https://registry.npmjs.org/${coordinates.key}").body() }
+            retry { client.get("https://registry.npmjs.org/${coordinates.npmArtifactName}").body() }
 
         val packageMetadata: NpmPackageMetadata =
             retry { client.get("https://registry.npmjs.org/${coordinates.name}").body() }
 
         val publicationDate = packageMetadata.time[coordinates.version.toString()]
-            ?: error("Unable to find publication date for ${coordinates.key}")
+            ?: error("Unable to find publication date for ${coordinates.npmArtifactName}")
 
         val tarball = client.get(coordinatesMetadata.dist.tarball).bodyAsChannel().toByteArray()
 
@@ -51,7 +58,6 @@ class NpmArtifactManager(
         val pomSha1 = security.sha1.digestAsHex(pom)
 
         val module: String = generateGradleMetadata(
-            json = json,
             packageName = coordinates.name,
             packageVersion = coordinates.version.toString(),
             fileSize = tarball.size.toLong(),
@@ -73,11 +79,7 @@ class NpmArtifactManager(
             tarballSize = tarball.size.toLong()
         )
 
-        val result = Result(hashes, pom, module)
-
-        GlobalScope.launch { caches.saveArtifactData(result) }
-
-        return result
+        return NpmArtifactResult(hashes, pom, module)
     }
 
     private fun getPomFor(
@@ -96,7 +98,6 @@ class NpmArtifactManager(
     ).toXml().insertAtLine(2, GRADLE_METADATA_POM_ANNOTATION)
 
     private fun generateGradleMetadata(
-        json: Json,
         packageName: String,
         packageVersion: String,
         fileSize: Long,
@@ -149,4 +150,3 @@ class NpmArtifactManager(
     )
 
 }
-

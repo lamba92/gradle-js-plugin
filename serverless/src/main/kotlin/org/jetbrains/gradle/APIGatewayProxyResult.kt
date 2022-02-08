@@ -1,8 +1,8 @@
 package org.jetbrains.gradle
 
 import externals.aws.APIGatewayProxyResult
-import externals.aws.`T$15`
-import externals.aws.`T$16`
+import externals.aws.Headers
+import externals.aws.MultiValuedHeaders
 import io.ktor.http.*
 
 fun APIGatewayProxyResult(
@@ -38,9 +38,9 @@ fun APIGatewayProxyResult(
 )
 
 data class APIGatewayProxyResultImpl(
-    override var statusCode: Number,
+    override var statusCode: Int,
     override var body: String,
-    override var headers: `T$15`? = emptyMap<String, String>().toJsObject(),
+    override var headers: Headers? = emptyMap<String, String>().toJsObject(),
     override var isBase64Encoded: Boolean? = false,
-    override var multiValueHeaders: `T$16`? = emptyMap<String, Array<String>>().toJsObject()
+    override var multiValueHeaders: MultiValuedHeaders? = emptyMap<String, Array<String>>().toJsObject()
 ) : APIGatewayProxyResult

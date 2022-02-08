@@ -1,8 +1,8 @@
 package org.jetbrains.gradle
 
-import Range
-import SemVer
 import crypto.Hash
+import externals.semver.Range
+import externals.semver.SemVer
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -24,7 +24,7 @@ fun <K, V> Map<K, List<V>>.toJsObject(): dynamic {
     val obj = js("{}")
     forEach { (k, v) -> obj[k] = v.toTypedArray() }
     return obj
-}typealias Callback = (error: Throwable?, result: Any) -> Unit
+}
 
 fun String.insertAtLine(index: Int, line: String) =
     lines().toMutableList().apply { add(index, line) }.joinToString("\n")
@@ -56,8 +56,6 @@ suspend fun <T> retry(
     }
 }
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-@OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
 suspend fun <K, V, R> Map<K, V>.parallelMapNotNull(
     transform: suspend CoroutineScope.(Map.Entry<K, V>) -> R?
 ) = coroutineScope { map { async { transform(it) } }.awaitAll().filterNotNull() }

@@ -1,6 +1,9 @@
 package org.jetbrains.gradle.data
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
@@ -8,7 +11,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-@Serializable(with = NpmVersionedPackageMetadata.Companion::class)
+@Serializable(with = NpmVersionedPackageMetadata.CustomSerializer::class)
 data class NpmVersionedPackageMetadata(
     val name: String,
     val version: String,
@@ -17,12 +20,10 @@ data class NpmVersionedPackageMetadata(
     val dependencies: Map<String, String> = emptyMap()
 ) {
 
-    @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-    @OptIn(ExperimentalSerializationApi::class)
     @Serializer(forClass = NpmVersionedPackageMetadata::class)
     object BaseSerializer : KSerializer<NpmVersionedPackageMetadata>
 
-    companion object : KSerializer<NpmVersionedPackageMetadata> {
+    companion object CustomSerializer : KSerializer<NpmVersionedPackageMetadata> {
         override val descriptor = BaseSerializer.descriptor
 
         override fun serialize(encoder: Encoder, value: NpmVersionedPackageMetadata) =
@@ -31,11 +32,17 @@ data class NpmVersionedPackageMetadata(
         override fun deserialize(decoder: Decoder): NpmVersionedPackageMetadata = if (decoder is JsonDecoder) {
             val body = decoder.decodeJsonElement()
             NpmVersionedPackageMetadata(
-                body.jsonObject.getValue("name").jsonPrimitive.content,
-                body.jsonObject.getValue("version").jsonPrimitive.content,
-                runCatching { body.jsonObject["author"]?.let { decoder.json.decodeFromJsonElement<Developer>(it) } }.getOrNull(),
-                decoder.json.decodeFromJsonElement(body.jsonObject.getValue("dist")),
-                decoder.json.decodeFromJsonElement(body.jsonObject.getValue("dependencies"))
+                name = body.jsonObject.getValue("name").jsonPrimitive.content,
+                version = body.jsonObject.getValue("version").jsonPrimitive.content,
+                author = runCatching {
+                    body.jsonObject["author"]?.let { decoder.json.decodeFromJsonElement<Developer>(it) }
+                }.getOrNull(),
+                dist = decoder.json.decodeFromJsonElement(body.jsonObject.getValue("dist")),
+                dependencies = runCatching {
+                    body.jsonObject["dependencies"]?.let {
+                        decoder.json.decodeFromJsonElement<Map<String, String>>(it)
+                    }
+                }.getOrNull() ?: emptyMap()
             )
         } else BaseSerializer.deserialize(decoder)
     }
